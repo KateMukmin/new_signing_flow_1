@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FCA Worker Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: 'Poppins', sans-serif; }
+  .shell { display: flex; height: 100vh; background: #fff; }
+
+  /* Sidebar */
+  .sidebar { width: 260px; min-width: 260px; background: #F7F9FB; border-right: 1px solid rgba(43,42,41,0.10); display: flex; flex-direction: column; overflow-y: auto; }
+  .sidebar-header { padding: 22px 20px 18px; border-bottom: 1px solid rgba(43,42,41,0.10); }
+  .sidebar-header .proj-name { font-size: 14px; font-weight: 600; color: #2B2A29; }
+  .sidebar-header .proj-sub { font-size: 11px; color: #727271; margin-top: 2px; }
+  .nav { padding: 14px 0; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 18px; font-size: 12px; color: #727271; border-right: 3px solid transparent; }
+  .nav-item.active { color: #00346B; font-weight: 600; background: rgba(0,52,107,0.05); border-right-color: #00346B; }
+  .nav-item.done { color: #727271; }
+  .nav-item.upcoming { color: #B3B3B2; }
+  .nav-icon { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(43,42,41,0.20); display: flex; align-items: center; justify-content: center; }
+  .nav-icon.ico-done { background: #1BB161; border-color: #1BB161; }
+  .nav-icon.ico-active { background: #00346B; border-color: #00346B; }
+  .nav-icon svg { width: 11px; height: 11px; display: block; }
+  .nav-connector { width: 1.5px; height: 8px; background: rgba(43,42,41,0.10); margin-left: 29px; }
+  .nav-sub { padding: 2px 18px 2px 50px; font-size: 11px; color: #B3B3B2; }
+
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { display: flex; align-items: center; justify-content: flex-end; gap: 18px; padding: 11px 36px; border-bottom: 1px solid rgba(43,42,41,0.10); flex-shrink: 0; }
+  .lang { font-size: 12px; color: #727271; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+  .lang.active { color: #00346B; font-weight: 600; border-bottom: 2px solid #00346B; padding-bottom: 1px; }
+  .help-btn { font-size: 12px; color: #727271; display: flex; align-items: center; gap: 4px; }
+
+  .content { flex: 1; overflow-y: auto; padding: 40px 48px 32px; display: flex; flex-direction: column; }
+  .content::-webkit-scrollbar { width: 5px; }
+  .content::-webkit-scrollbar-thumb { background: rgba(43,42,41,0.15); border-radius: 3px; }
+
+  .step-tag { font-size: 10px; font-weight: 600; color: #1BB161; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 26px; font-weight: 600; color: #2B2A29; line-height: 140%; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: #727271; margin-bottom: 22px; }
+
+  .progress { display: flex; gap: 5px; align-items: center; margin-bottom: 22px; }
+  .pdot { width: 8px; height: 8px; border-radius: 50%; background: rgba(43,42,41,0.12); transition: all 0.3s; }
+  .pdot.done { background: #1BB161; }
+  .pdot.active { background: #00346B; width: 26px; border-radius: 4px; }
+
+  /* Inputs */
+  .input-wrap { position: relative; margin-bottom: 16px; }
+  .float-label { position: absolute; top: -8px; left: 12px; font-size: 10px; color: #727271; background: #fff; padding: 0 4px; font-weight: 500; z-index: 1; }
+  .text-input { width: 100%; border: 1px solid rgba(43,42,41,0.20); border-radius: 8px; padding: 13px 44px 13px 14px; font-size: 13px; color: #2B2A29; font-family: 'Poppins', sans-serif; background: rgba(228,231,233,0.25); outline: none; transition: border-color 0.15s; }
+  .text-input:focus { border-color: #00346B; background: #fff; }
+  .text-input.has-value { border-color: #1BB161; background: #fff; }
+  .eye-icon { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); cursor: pointer; }
+
+  /* Password rules */
+  .pw-rules { margin-bottom: 18px; }
+  .pw-rules .rule-title { font-size: 12px; font-weight: 600; color: #2B2A29; margin-bottom: 7px; }
+  .pw-rule { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #1BB161; margin-bottom: 4px; }
+  .pw-rule span { color: #727271; }
+  .pw-rule svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* Doc box */
+  .doc-box { border: 1px solid rgba(43,42,41,0.10); border-radius: 8px; padding: 18px 20px; max-height: 210px; overflow-y: auto; background: rgba(228,231,233,0.30); margin-bottom: 12px; flex-shrink: 0; }
+  .doc-box::-webkit-scrollbar { width: 4px; }
+  .doc-box::-webkit-scrollbar-thumb { background: rgba(43,42,41,0.15); border-radius: 2px; }
+  .doc-section { margin-bottom: 14px; }
+  .doc-section:last-child { margin-bottom: 0; }
+  .doc-section strong { font-size: 10px; font-weight: 600; color: #2B2A29; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .doc-section p { font-size: 12px; color: #727271; line-height: 1.75; }
+  .doc-section ul { padding-left: 16px; margin-top: 4px; }
+  .doc-section li { font-size: 12px; color: #727271; line-height: 1.75; margin-bottom: 3px; }
+
+  /* Scroll hint */
+  .scroll-hint { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #1BB161; margin-bottom: 14px; }
+  .scroll-hint svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* Consent checkbox */
+  .consent-check-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+  .con-checkbox { width: 18px; height: 18px; min-width: 18px; border-radius: 4px; border: 1.5px solid #1BB161; background: #1BB161; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .con-checkbox svg { width: 11px; height: 11px; }
+  .check-label { font-size: 12px; color: #2B2A29; line-height: 1.6; }
+
+  /* Summary box */
+  .summary-box { border: 1px solid rgba(0,52,107,0.15); border-radius: 8px; padding: 16px 18px; background: rgba(0,52,107,0.03); margin-bottom: 16px; }
+  .summary-box .summary-title { font-size: 12px; font-weight: 600; color: #2B2A29; margin-bottom: 10px; }
+  .summary-box .summary-agreements { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .summary-tag { font-size: 11px; color: #1BB161; background: rgba(27,177,97,0.08); border: 1px solid rgba(27,177,97,0.2); border-radius: 100px; padding: 3px 10px; }
+  .summary-box .summary-notes { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(43,42,41,0.08); padding-top: 12px; }
+  .summary-note { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: #727271; line-height: 1.65; }
+  .note-icon { width: 16px; height: 16px; min-width: 16px; margin-top: 1px; border-radius: 50%; background: rgba(0,52,107,0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .note-icon svg { width: 9px; height: 9px; }
+
+  /* Signature */
+  .sig-box { border: 1px solid rgba(43,42,41,0.20); border-radius: 8px; background: rgba(228,231,233,0.25); margin-bottom: 8px; position: relative; overflow: hidden; }
+  .sig-box canvas { display: block; cursor: crosshair; }
+  .sig-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 12px; color: #B3B3B2; font-style: italic; pointer-events: none; transition: opacity 0.2s; }
+  .sig-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .sig-clear { font-size: 11px; color: #727271; border: 1px solid rgba(43,42,41,0.20); border-radius: 100px; padding: 3px 14px; cursor: pointer; background: none; font-family: 'Poppins', sans-serif; }
+  .sig-note { font-size: 10px; color: #B3B3B2; line-height: 1.6; margin-bottom: 14px; }
+
+  /* Actions */
+  .spacer { flex: 1; min-height: 16px; }
+  .actions { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid rgba(43,42,41,0.10); flex-shrink: 0; }
+  .btn-back { font-size: 13px; font-weight: 500; color: #2B2A29; background: none; border: 1px solid rgba(43,42,41,0.20); border-radius: 100px; padding: 9px 22px; cursor: pointer; font-family: 'Poppins', sans-serif; }
+  .btn-back:hover { border-color: rgba(43,42,41,0.40); }
+  .btn-next { font-size: 13px; font-weight: 500; color: #fff; background: #00346B; border: none; border-radius: 100px; padding: 9px 24px; cursor: pointer; display: flex; align-items: center; gap: 7px; font-family: 'Poppins', sans-serif; transition: background 0.15s; }
+  .btn-next:hover:not(:disabled) { background: #00294F; }
+  .btn-next:disabled { background: rgba(43,42,41,0.15); cursor: not-allowed; }
+  .btn-next svg { width: 13px; height: 13px; }
+  .btn-ghost { font-size: 13px; font-weight: 500; color: #00346B; background: none; border: 1px solid rgba(0,52,107,0.25); border-radius: 100px; padding: 9px 22px; cursor: pointer; font-family: 'Poppins', sans-serif; display: flex; align-items: center; gap: 7px; }
+  .btn-ghost:hover { border-color: #00346B; }
+  .btn-ghost svg { width: 13px; height: 13px; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="proj-name">Kate Testing Project</div>
+      <div class="proj-sub">Kate GC</div>
+    </div>
+    <nav class="nav" id="sidebar"></nav>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="lang active">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#00346B" stroke-width="1.2"/><path d="M6.5 1C6.5 1 4 3 4 6.5s2.5 5.5 2.5 5.5M6.5 1c0 0 3 2 3 5.5s-3 5.5-3 5.5M1 6.5h11" stroke="#00346B" stroke-width="1.2"/></svg>
+        English
+      </div>
+      <div class="lang">Español</div>
+      <div class="help-btn">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#727271" stroke-width="1.2"/><path d="M5 5c0-1 3-1.5 3 0s-1.5 1-1.5 2M6.5 9.5v.3" stroke="#727271" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Help
+      </div>
+    </header>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<script>
+const NAV = [
+  { label: "Worker Registration",     subs: ["Password", "Confirm Password"], force: "done" },
+  { label: "Create Password",         subs: [] },
+  { label: "Terms & Conditions",      subs: [] },
+  { label: "Authorization & Consent", subs: [] },
+  { label: "Biometric Consent",       subs: [] },
+  { label: "Signature",               subs: [] },
+  { label: "Take a Photo",            subs: [] },
+  { label: "Personal Information",    subs: [], force: "done" },
+  { label: "Certifications",          subs: [], force: "done" },
+  { label: "Consent Form",            subs: [] },
+  { label: "Project Courses",         subs: [], force: "done" },
+];
+
+const SCREEN_TO_NAV = [1, 2, 3, 4, 5, 5];
+
+function iconHtml(type) {
+  if (type === 'done')   return `<div class="nav-icon ico-done"><svg viewBox="0 0 11 11" fill="none"><path d="M2 5.5l2.5 2.5L9 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+  if (type === 'active') return `<div class="nav-icon ico-active"><svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="#fff"/></svg></div>`;
+  return `<div class="nav-icon"><svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="2" fill="rgba(43,42,41,0.15)"/></svg></div>`;
+}
+
+function renderSidebar(screenIdx) {
+  const activeNavIdx = SCREEN_TO_NAV[screenIdx];
+  const isConfirmation = screenIdx === 5;
+  let html = '', first = true;
+  NAV.forEach((step, i) => {
+    const isDone = step.force === 'done'
+      || (isConfirmation && i >= 1 && i <= 5)
+      || (!isConfirmation && i > 0 && i < activeNavIdx);
+    const isActive = !isConfirmation && i === activeNavIdx;
+    const type = isDone ? 'done' : isActive ? 'active' : 'upcoming';
+    if (!first) html += '<div class="nav-connector"></div>';
+    first = false;
+    html += `<div class="nav-item ${type}">${iconHtml(type)}<span>${step.label}</span></div>`;
+    step.subs.forEach(s => { html += `<div class="nav-sub">${s}</div>`; });
+  });
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+function dots(prog) {
+  const filled = prog.filter(x => x === 1).length;
+  return prog.map((p, i) => {
+    if (p === 1 && i < filled - 1) return '<div class="pdot done"></div>';
+    if (p === 1) return '<div class="pdot active"></div>';
+    return '<div class="pdot"></div>';
+  }).join('');
+}
+
+const eyeSvg  = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8s2.8-5 7-5 7 5 7 5-2.8 5-7 5-7-5-7-5z" stroke="#B3B3B2" stroke-width="1.2"/><circle cx="8" cy="8" r="2.2" stroke="#B3B3B2" stroke-width="1.2"/></svg>`;
+const arrowR  = `<svg viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7.5 3.5l3 3-3 3" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const arrowL  = `<svg viewBox="0 0 13 13" fill="none"><path d="M10.5 6.5h-8M5.5 9.5l-3-3 3-3" stroke="#00346B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const pwRules = ["Be a minimum of 8–15 characters","Include at least one upper case (A–Z)","Include at least one lower case (a–z)","Include at least one number (0–9)","Include at least one special character (!, &, $)","Should not have spaces","Your username and password cannot be same"];
+const ruleRow = r => `<div class="pw-rule"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" fill="rgba(27,177,97,0.12)"/><path d="M4 7l2.3 2.3L10 4.5" stroke="#1BB161" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${r}</span></div>`;
+const scrollDone = `<div class="scroll-hint"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#1BB161" stroke-width="1.2"/><path d="M4.5 7l2 2L9.5 5" stroke="#1BB161" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Scrolled to end — you may proceed</div>`;
+const conCheck = `<div class="consent-check-row"><div class="con-checkbox"><svg viewBox="0 0 11 11" fill="none"><path d="M2 5.5l2.5 2.5L9 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+
+function noteItem(svgPath, text) {
+  return `<div class="summary-note">
+    <div class="note-icon"><svg viewBox="0 0 9 9" fill="none">${svgPath}</svg></div>
+    <span>${text}</span>
+  </div>`;
+}
+
+const SCREENS = [
+
+  // 0 — Create Password
+  {
+    tag: null, title: "Create Password", sub: "Enter your password", progress: null,
+    render: () => `
+      <div class="input-wrap">
+        <div class="float-label">Password *</div>
+        <input class="text-input" id="pw1" type="password" placeholder="Password" oninput="checkPwFields()"/>
+        <span class="eye-icon">${eyeSvg}</span>
+      </div>
+      <div class="pw-rules">
+        <div class="rule-title">Password must:</div>
+        ${pwRules.map(ruleRow).join('')}
+      </div>
+      <div class="input-wrap">
+        <div class="float-label">Confirm Password *</div>
+        <input class="text-input" id="pw2" type="password" placeholder="Confirm Password" oninput="checkPwFields()"/>
+        <span class="eye-icon">${eyeSvg}</span>
+      </div>`,
+    back: "Back", backFn: () => {},
+    next: "Create Account", nextFn: () => go(1),
+    requiresPw: true
+  },
+
+  // 1 — Terms & Conditions
+  {
+    tag: "Step 1 of 4", title: "Terms & Conditions", sub: "Please read the platform terms carefully", progress: [1,0,0,0],
+    render: () => `
+      <div class="doc-box">
+        <div class="doc-section"><strong>Platform use</strong><p>By creating an account on the FCA platform, you agree to use it solely for legitimate credentialing and project access purposes. You may not share account credentials or misrepresent your identity at any time.</p></div>
+        <div class="doc-section"><strong>Data collection & use</strong><p>Field Control Analytics ("FCA") will collect, store, and use the information you provide — including your photograph — in order to identify you for the purpose of allowing access to the jobsite. FCA may also have governmental reporting requirements related to the jobsite, and your personal information may be shared for that purpose.</p></div>
+        <div class="doc-section"><strong>Data retention & removal</strong><p>FCA will store your personal information until you request, in writing, that such information be removed from FCA's database. FCA will never sell your personal information or provide it to third parties except as described herein.</p></div>
+        <div class="doc-section"><strong>Account termination</strong><p>FCA reserves the right to suspend or terminate accounts that violate these terms or any applicable laws and regulations.</p></div>
+      </div>
+      ${scrollDone}
+      ${conCheck}<div class="check-label">I have read and agree to the Terms &amp; Conditions</div></div>`,
+    back: "Back", backFn: () => go(0),
+    next: "Next", nextFn: () => go(2)
+  },
+
+  // 2 — Authorization & Consent
+  {
+    tag: "Step 2 of 4", title: "Authorization & Consent", sub: "FCA Authorization Regarding Credentialing and Analytics", progress: [1,1,0,0],
+    render: () => `
+      <div class="doc-box">
+        <div class="doc-section"><strong>Disclosure</strong><p>The information requested is necessary to onboard you (the Applicant) and issue your Project badge. FCA will collect, store, and use the information above, and your photograph, to identify you for the purpose of allowing access to the jobsite, so long as you remain eligible for employment (the "Services").</p></div>
+        <div class="doc-section"><strong>By signing, you consent that:</strong><ul>
+          <li>Your personal information may be collected, stored, and used for identification purposes by your employer, FCA, the General Contractor and/or its agents and subcontractors as part of the Services.</li>
+          <li>Your personal information may be used to perform and report on certain data analytics regarding the Project. Data may be anonymized and provided to third parties in aggregate form.</li>
+          <li>Your personal information may be shared with, or processed and re-sold to, the Data Users.</li>
+          <li>Your name, photograph, and other personal information will be retained by FCA until you request, in writing, that FCA delete such information.</li>
+          <li>If at any time during the Project you fail to meet minimum standards, your photo identification badge may be revoked.</li>
+          <li>You elect to receive periodic Project emergency and update texts at the number you have provided.</li>
+        </ul></div>
+      </div>
+      ${scrollDone}
+      ${conCheck}<div class="check-label">I have read and agree to the FCA Authorization Regarding Credentialing and Analytics</div></div>`,
+    back: "Back", backFn: () => go(1),
+    next: "Next", nextFn: () => go(3)
+  },
+
+  // 3 — Biometric Consent
+  {
+    tag: "Step 3 of 4", title: "Biometric Consent", sub: "How FCA collects and uses your biometric data", progress: [1,1,1,0],
+    render: () => `
+      <div class="doc-box">
+        <div class="doc-section"><p>My information may be collected, captured, obtained, stored, and used by Field Control Analytics ("FCA") and for identification purposes (collectively, the "Data Users"). FCA may collect, capture, obtain, store, transmit, maintain, process, derive, and use my biometric information for its use related to the Services or for identification and credentialing.</p></div>
+        <div class="doc-section"><p>This information includes personal information and biometric information such as digital photograph. Facial recognition, the virtual comparison of your facial images when logging into the FCA mobile application for allowing access to the online training platform or to tracking your progress through the training and recording your assessment results may be used.</p></div>
+        <div class="doc-section"><p>My information will be retained by FCA until I request, in writing, that FCA delete such information. I may contact an FCA representative to request removal of my information from FCA's database. By consenting, I acknowledge and agree that FCA and its representatives may use and share biometric information for the purposes listed above.</p></div>
+      </div>
+      ${scrollDone}
+      ${conCheck}<div class="check-label">By checking this box, I give my consent as a written release for FCA to collect, capture, store, transmit, maintain, process, derive and use my personal biometric information as described above.</div></div>`,
+    back: "Back", backFn: () => go(2),
+    next: "Next", nextFn: () => go(4)
+  },
+
+  // 4 — Signature
+  {
+    tag: "Step 4 of 4", title: "Your signature", sub: "Sign once to confirm all three agreements", progress: [1,1,1,1],
+    render: () => `
+      <div class="summary-box">
+        <div class="summary-title">By signing below, you confirm you have read and agreed to:</div>
+        <div class="summary-agreements">
+          <span class="summary-tag">✓ Terms &amp; Conditions</span>
+          <span class="summary-tag">✓ Authorization &amp; Consent Form</span>
+          <span class="summary-tag">✓ Biometric Consent Form</span>
+        </div>
+        <div class="summary-notes">
+          ${noteItem(
+            `<path d="M4.5 1.5h4M1.5 1.5h1.5M1.5 4.5h6M1.5 7.5h6" stroke="#00346B" stroke-width="1.1" stroke-linecap="round"/>`,
+            `Your signature will be applied to consent forms on all projects you are assigned to, covering the agreements above.`
+          )}
+          ${noteItem(
+            `<path d="M1.5 7L3 5.5l1.5 1.5L7.5 2" stroke="#00346B" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>`,
+            `You can update your signature at any time from your profile settings. Any updated signature will apply to future project assignments.`
+          )}
+          ${noteItem(
+            `<circle cx="4.5" cy="4.5" r="3" stroke="#00346B" stroke-width="1.1"/><path d="M4.5 3v2l1 1" stroke="#00346B" stroke-width="1.1" stroke-linecap="round"/>`,
+            `On some projects you will be assigned first and must accept before a badge is issued. On others you will be activated automatically but will always retain the option to decline the project.`
+          )}
+          ${noteItem(
+            `<rect x="1.5" y="1.5" width="6" height="6" rx="1" stroke="#00346B" stroke-width="1.1"/><path d="M3 4.5h3M3 6h1.5" stroke="#00346B" stroke-width="1.1" stroke-linecap="round"/>`,
+            `Some projects may require additional information from you. You will be asked to provide these individually for each project.`
+          )}
+        </div>
+      </div>
+      <div class="sig-box">
+        <canvas id="sigCanvas"></canvas>
+        <div class="sig-placeholder" id="sigPlaceholder">Draw your signature here</div>
+      </div>
+      <div class="sig-actions"><button class="sig-clear" onclick="clearSig()">Clear</button></div>
+      <div class="sig-note">By signing this document with an electronic signature, I agree that such signature will be as valid as handwritten signatures to the extent allowed by local law.</div>`,
+    back: "Back", backFn: () => go(3),
+    next: "Submit & Create Account", nextFn: () => go(5),
+    afterRender: initSig
+  },
+
+  // 5 — Confirmation
+  {
+    tag: "All done", title: "Account created", sub: "Your agreements are signed and on file. Continue to complete your profile.", progress: null,
+    render: () => `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:24px 0 8px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(27,177,97,0.12);display:flex;align-items:center;justify-content:center;">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M6 16l7 7L26 9" stroke="#1BB161" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-size:14px;color:#727271;text-align:center;max-width:320px;line-height:1.7;">Your account is created and all agreements have been recorded. You can now proceed to complete your profile.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
+          <div style="font-size:11px;color:#1BB161;background:rgba(27,177,97,0.08);border:1px solid rgba(27,177,97,0.2);border-radius:100px;padding:4px 12px;">✓ Terms & Conditions</div>
+          <div style="font-size:11px;color:#1BB161;background:rgba(27,177,97,0.08);border:1px solid rgba(27,177,97,0.2);border-radius:100px;padding:4px 12px;">✓ Authorization & Consent</div>
+          <div style="font-size:11px;color:#1BB161;background:rgba(27,177,97,0.08);border:1px solid rgba(27,177,97,0.2);border-radius:100px;padding:4px 12px;">✓ Biometric Consent</div>
+          <div style="font-size:11px;color:#1BB161;background:rgba(27,177,97,0.08);border:1px solid rgba(27,177,97,0.2);border-radius:100px;padding:4px 12px;">✓ Signature on file</div>
+        </div>
+      </div>`,
+    back: "Back", backFn: () => go(4),
+    next: "Continue to Take a Photo", nextFn: () => alert("Proceeding to next onboarding step…"),
+    extraAction: { label: "Restart from beginning", fn: () => go(0) }
+  }
+];
+
+function checkPwFields() {
+  const p1 = document.getElementById('pw1');
+  const p2 = document.getElementById('pw2');
+  const btn = document.getElementById('mainNextBtn');
+  if (!p1 || !p2 || !btn) return;
+  const filled = p1.value.length > 0 && p2.value.length > 0;
+  p1.classList.toggle('has-value', p1.value.length > 0);
+  p2.classList.toggle('has-value', p2.value.length > 0);
+  btn.disabled = !filled;
+}
+
+function go(idx) {
+  const s = SCREENS[idx];
+  renderSidebar(idx);
+  const c = document.getElementById('content');
+
+  const leftBtns = s.extraAction
+    ? `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+         <button class="btn-back" onclick="SCREENS[${idx}].backFn()">${s.back}</button>
+         <button class="btn-ghost" onclick="SCREENS[${idx}].extraAction.fn()">${arrowL} ${s.extraAction.label}</button>
+       </div>`
+    : s.back
+      ? `<button class="btn-back" onclick="SCREENS[${idx}].backFn()">${s.back}</button>`
+      : `<span></span>`;
+
+  const isDisabled = s.requiresPw ? 'disabled' : '';
+
+  c.innerHTML = `
+    ${s.tag ? `<div class="step-tag">${s.tag}</div>` : ''}
+    <div class="page-title">${s.title}</div>
+    <div class="page-sub">${s.sub}</div>
+    ${s.progress ? `<div class="progress">${dots(s.progress)}</div>` : ''}
+    ${s.render()}
+    <div class="spacer"></div>
+    <div class="actions">
+      ${leftBtns}
+      <button class="btn-next" id="mainNextBtn" onclick="SCREENS[${idx}].nextFn()" ${isDisabled}>${s.next} ${arrowR}</button>
+    </div>`;
+
+  if (s.afterRender) s.afterRender();
+}
+
+// Signature
+let drawing = false, sigCanvas, sigCtx;
+function initSig() {
+  sigCanvas = document.getElementById('sigCanvas');
+  if (!sigCanvas) return;
+  sigCanvas.width = sigCanvas.parentElement.clientWidth;
+  sigCanvas.height = 130;
+  sigCtx = sigCanvas.getContext('2d');
+  sigCtx.strokeStyle = '#2B2A29'; sigCtx.lineWidth = 2; sigCtx.lineCap = 'round'; sigCtx.lineJoin = 'round';
+  const pos = e => { const r = sigCanvas.getBoundingClientRect(), src = e.touches ? e.touches[0] : e; return { x: src.clientX - r.left, y: src.clientY - r.top }; };
+  sigCanvas.onmousedown  = e => { drawing = true; const p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); };
+  sigCanvas.onmousemove  = e => { if (!drawing) return; const p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); document.getElementById('sigPlaceholder').style.opacity = '0'; };
+  sigCanvas.onmouseup    = () => drawing = false;
+  sigCanvas.onmouseleave = () => drawing = false;
+  sigCanvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }, { passive: false });
+  sigCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!drawing) return; const p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); document.getElementById('sigPlaceholder').style.opacity = '0'; }, { passive: false });
+  sigCanvas.addEventListener('touchend', () => drawing = false);
+}
+function clearSig() {
+  if (!sigCtx) return;
+  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  document.getElementById('sigPlaceholder').style.opacity = '1';
+}
+
+go(0);
+</script>
+</body>
+</html>
