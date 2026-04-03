@@ -1,20 +1,5 @@
 {
-  "outputDirectory": "public",
   "rewrites": [
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "cookie",
-          "key": "auth",
-          "value": "granted"
-        }
-      ],
-      "destination": "/index.html"
-    },
-    {
-      "source": "/",
-      "destination": "/gate.html"
-    }
+    { "source": "/(.*)", "destination": "/api/index" }
   ]
 }
