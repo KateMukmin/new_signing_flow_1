@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "cookie",
+          "key": "auth",
+          "value": "granted"
+        }
+      ],
+      "destination": "/public/index.html"
+    },
+    {
+      "source": "/",
+      "destination": "/public/gate.html"
+    }
+  ]
+}
