@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -7,10 +7,9 @@ export default function handler(req, res) {
   const CORRECT_CODE = process.env.PASSCODE;
 
   if (passcode === CORRECT_CODE) {
-    // Set a cookie that expires in 8 hours
     res.setHeader("Set-Cookie", `auth=granted; HttpOnly; Path=/; Max-Age=28800; SameSite=Strict`);
     return res.status(200).json({ success: true });
   }
 
   return res.status(401).json({ error: "Incorrect passcode" });
-}
+};
